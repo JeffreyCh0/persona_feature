@@ -7,8 +7,8 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
     # content is the message
 
     for i in range(n_rounds):
-        print(f"Round {i+1}")
         # agent1 speaks
+        agent1.reset_chat()
         agent1.load_message(conversation)
         r1 = agent1.get_response()
         conversation.append({"role": "assistant", "content": r1})
@@ -17,10 +17,15 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
         conversation = switch_roles(conversation)
 
         # agent2 speaks
+        agent2.reset_chat()
         agent2.load_message(conversation)
         r2 = agent2.get_response()
         conversation.append({"role": "assistant", "content": r2})
 
+        # switch roles
+        conversation = switch_roles(conversation)
+
+    conversation = switch_roles(conversation)
     return conversation
 
 

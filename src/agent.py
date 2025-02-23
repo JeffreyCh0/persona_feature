@@ -21,6 +21,9 @@ class Agent:
         self.model = model_to_model_id[model]
         self.temperature = temperature
 
+    def reset_chat(self):
+        self.chat_history = []
+
     def load_system_message(self, system_message):
         if type(system_message) == str:
             self.system_message = [{"role": "system", "content": system_message}]
