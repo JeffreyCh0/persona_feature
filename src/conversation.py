@@ -1,3 +1,6 @@
+from agent import Agent
+from feature_rater import feature_rater
+
 def run_conversation(conversation, agent1, agent2, n_rounds=5):
     # run diadic conversation between two openai agents
     # agent1 and agent2 are objects of class Agent
@@ -41,4 +44,22 @@ def switch_roles(conversation):
             message["role"] = "user"
 
     return conversation
-    
+
+
+
+def run_single_conversation(key):
+    """Function to generate one conversation and rate it."""
+    agent1 = Agent()
+    agent1.load_system_message(f"# Background: Two people, you and another person, met at church. \n # Persona: You are {key}.")
+
+    agent2 = Agent()
+    agent2.load_system_message("# Background: Two people, you and another person, met at church.")
+
+    conversation = run_conversation([], agent1, agent2, n_rounds=10)
+
+    rating_instruction = f"Given a message, rate {key} from 1 (no {key}) to 5 (extreme {key})."
+
+    agent1_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'user']
+    agent2_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'assistant']
+
+    return agent1_rating, agent2_rating, conversation
