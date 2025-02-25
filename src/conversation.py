@@ -12,6 +12,9 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
     for i in range(n_rounds):
         # agent1 speaks
         agent1.reset_chat()
+        if i == 0:
+            persona1 = agent1.system_message
+            persona1[0]['content'] += "\n # Task: Initiate the conversation." 
         agent1.load_message(conversation)
         r1 = agent1.get_response()
         conversation.append({"role": "assistant", "content": r1})
@@ -47,17 +50,26 @@ def switch_roles(conversation):
 
 
 
-def run_single_conversation(key):
-    """Function to generate one conversation and rate it."""
+def run_single_conversation(key1 = None, key2 = None):
+    # Function to generate one conversation and rate it.
+
+    background = "This is a conversation between two people."
+
     agent1 = Agent()
-    agent1.load_system_message(f"# Background: Two people, you and another person, met at church. \n # Persona: You are {key}.")
+    persona1 = f"# Background: {background}"
+    if key1:
+        persona1 += f"\n # Persona: You are {key1}."
+    agent1.load_system_message(persona1)
 
     agent2 = Agent()
-    agent2.load_system_message("# Background: Two people, you and another person, met at church.")
+    persona2 = f"# Background: {background}"
+    if key2:
+        persona2 += f"\n # Persona: You are {key2}."
+    agent2.load_system_message(persona2)
 
     conversation = run_conversation([], agent1, agent2, n_rounds=10)
 
-    rating_instruction = f"Given a message, rate {key} from 1 (no {key}) to 5 (extreme {key})."
+    rating_instruction = f"Given a message, rate {key1} from 1 (no {key1}) to 5 (extreme {key1})."
 
     agent1_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'user']
     agent2_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'assistant']

@@ -48,8 +48,10 @@ def draw_lineplot(agent1_ratings, agent2_ratings, key, result_dir):
     plt.legend()
     plt.grid(True)
 
+    # save the figure
+    plt.savefig(f"{result_dir}{key}.png")
+
     # Show plot
     plt.show()
 
-    # save the figure
-    plt.savefig(f"{result_dir}{key}.png")
+    
