@@ -39,7 +39,7 @@ class Agent:
         else:
             raise ValueError("Invalid message type. Expected list, got ", type(messages))
 
-    def get_response(self, response_format = {"type": "text"}, debug = False):
+    def get_response(self, response_format = {"type": "text"}, debug = True):
         input_messages = self.system_message + self.chat_history
         if debug:
             print(input_messages)

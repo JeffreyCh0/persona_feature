@@ -2,7 +2,8 @@ from agent import Agent
 from feature_rater import feature_rater
 from copy import deepcopy
 
-def run_conversation(conversation, agent1, agent2, n_rounds=5):
+
+def run_conversation(conversation, agent1, agent2, n_rounds=5, repeat_sys_msg = True):
     # run diadic conversation between two openai agents
     # agent1 and agent2 are objects of class Agent
     # n_rounds is the number of rounds in the conversation
@@ -10,17 +11,26 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
     # role is either "user" or "agent"
     # content is the message
 
-    org_system_message_1 = str(agent1.system_message[0]['content'])
+    org_system_message_1 = deepcopy(agent1.system_message)
+    org_system_message_2 = deepcopy(agent2.system_message)
 
     for i in range(n_rounds):
         # agent1 speaks
         agent1.reset_chat()
-        if i == 0:
+        # let agent1 initialize the conversation
+        if i == 0: 
             agent1.system_message[0]['content'] += "\n # Task: Initiate the conversation." 
-        agent1.load_message(conversation)
+        # repeat the system message for agent1
+        if repeat_sys_msg and i != 0: 
+            agent1.load_message(conversation + org_system_message_1)
+        else: 
+            agent1.load_message(conversation)
+
         r1 = agent1.get_response()
-        if i == 0:
-            agent1.system_message[0]['content'] = org_system_message_1
+
+        # restore the original system message
+        if i == 0: 
+            agent1.system_message = org_system_message_1
 
         conversation.append({"role": "assistant", "content": r1})
 
@@ -30,7 +40,11 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
 
         # agent2 speaks
         agent2.reset_chat()
-        agent2.load_message(conversation)
+        # repeat the system message for agent2
+        if repeat_sys_msg:
+            agent2.load_message(conversation + org_system_message_2)
+        else:
+            agent2.load_message(conversation)
         r2 = agent2.get_response()
         conversation.append({"role": "assistant", "content": r2})
 
