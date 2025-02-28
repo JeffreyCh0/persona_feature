@@ -1,5 +1,6 @@
 from agent import Agent
 from feature_rater import feature_rater
+from copy import deepcopy
 
 def run_conversation(conversation, agent1, agent2, n_rounds=5):
     # run diadic conversation between two openai agents
@@ -9,15 +10,20 @@ def run_conversation(conversation, agent1, agent2, n_rounds=5):
     # role is either "user" or "agent"
     # content is the message
 
+    org_system_message_1 = str(agent1.system_message[0]['content'])
+
     for i in range(n_rounds):
         # agent1 speaks
         agent1.reset_chat()
         if i == 0:
-            persona1 = agent1.system_message
-            persona1[0]['content'] += "\n # Task: Initiate the conversation." 
+            agent1.system_message[0]['content'] += "\n # Task: Initiate the conversation." 
         agent1.load_message(conversation)
         r1 = agent1.get_response()
+        if i == 0:
+            agent1.system_message[0]['content'] = org_system_message_1
+
         conversation.append({"role": "assistant", "content": r1})
+
 
         # switch roles
         conversation = switch_roles(conversation)
@@ -50,8 +56,16 @@ def switch_roles(conversation):
 
 
 
-def run_single_conversation(key1 = None, key2 = None):
+def run_single_simulation(keys):
     # Function to generate one conversation and rate it.
+    if len(keys) == 1:
+        key1 = keys[0]
+        key2 = None
+    elif len(keys) == 2:
+        key1 = keys[0]
+        key2 = keys[1]
+    else:
+        raise ValueError("Invalid number of keys. Expected 1 or 2, got ", len(keys))
 
     background = "This is a conversation between two people."
 
@@ -69,7 +83,7 @@ def run_single_conversation(key1 = None, key2 = None):
 
     conversation = run_conversation([], agent1, agent2, n_rounds=10)
 
-    rating_instruction = f"Given a message, rate {key1} from 1 (no {key1}) to 5 (extreme {key1})."
+    rating_instruction = f"Given a message, rate {key1} from 1 (not {key1}) to 5 (extremely {key1})."
 
     agent1_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'user']
     agent2_rating = [feature_rater(rating_instruction, x['content']) for x in conversation if x['role'] == 'assistant']

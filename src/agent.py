@@ -24,6 +24,9 @@ class Agent:
     def reset_chat(self):
         self.chat_history = []
 
+    def reset_system_message(self):
+        self.system_message = []
+
     def load_system_message(self, system_message):
         if type(system_message) == str:
             self.system_message = [{"role": "system", "content": system_message}]
@@ -36,9 +39,12 @@ class Agent:
         else:
             raise ValueError("Invalid message type. Expected list, got ", type(messages))
 
-    def get_response(self, response_format = {"type": "text"}):
+    def get_response(self, response_format = {"type": "text"}, debug = False):
+        input_messages = self.system_message + self.chat_history
+        if debug:
+            print(input_messages)
         if self.model in available_models['openai']:
-            input_messages = self.system_message + self.chat_history
+            input_messages = input_messages
             response_raw = self.openai_client.chat.completions.create(
                 model=self.model,
                 response_format = response_format,
